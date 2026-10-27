@@ -28,6 +28,37 @@
             margin-bottom: 24px;
             box-shadow: 0 2px 8px #0000000a;
         }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #0000000a;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+
+        @media (min-width: 800px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
         label {
             display: block;
             font-weight: bold;
@@ -90,7 +121,38 @@
             <h1>PulseCheck</h1>
             <p class="muted">API Health &amp; Response Monitor</p>
         </header>
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Pemeriksaan</div>
+                <div class="stat-value">{{ $totalChecks }}</div>
+            </div>
 
+            <div class="stat-card">
+                <div class="stat-label">Pemeriksaan UP</div>
+                <div class="stat-value" style="color: #16a34a;">
+                    {{ $upChecks }}
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Pemeriksaan DOWN</div>
+                <div class="stat-value" style="color: #dc2626;">
+                    {{ $downChecks }}
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Rata-rata Response Time</div>
+                <div class="stat-value">
+                    @if ($avgResponseTime !== null)
+                        {{ number_format($avgResponseTime, 2) }}
+                        <span style="font-size: 14px;">ms</span>
+                    @else
+                        -
+                    @endif
+                </div>
+            </div>
+        </section>
         @if (session('success'))
             <div class="message">{{ session('success') }}</div>
         @endif

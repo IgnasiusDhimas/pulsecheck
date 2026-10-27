@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Services\EndpointChecker;
+use App\Models\CheckResult;
 
 class MonitoredEndpointController extends Controller
 {
@@ -18,8 +19,24 @@ class MonitoredEndpointController extends Controller
             }
         ])->latest()->get();
 
-        return view('endpoints.index', compact('endpoints'));
+        $totalChecks = CheckResult::count();
+
+        $upChecks = CheckResult::where('status', 'up')->count();
+
+        $downChecks = CheckResult::where('status', 'down')->count();
+
+        $avgResponseTime = CheckResult::whereNotNull('response_time_ms')
+            ->avg('response_time_ms');
+
+        return view('endpoints.index', compact(
+            'endpoints',
+            'totalChecks',
+            'upChecks',
+            'downChecks',
+            'avgResponseTime'
+        ));
     }
+
 
     public function store(Request $request): RedirectResponse
     {
