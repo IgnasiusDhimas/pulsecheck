@@ -155,17 +155,65 @@
                         <tr>
                             <th>Nama</th>
                             <th>URL</th>
+                            <th>Status</th>
+                            <th>Response Time</th>
                             <th>Dibuat</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($endpoints as $endpoint)
+                            @php
+                                $latestCheck = $endpoint->checkResults->first();
+                            @endphp
+
                             <tr>
                                 <td>{{ $endpoint->name }}</td>
+
                                 <td class="url">{{ $endpoint->url }}</td>
-                                <td>{{ $endpoint->created_at->format('d M Y H:i') }}</td>
+
                                 <td>
+                                    @if (!$latestCheck)
+                                        <span class="muted">Belum diperiksa</span>
+                                    @elseif ($latestCheck->status === 'up')
+                                        <span style="color: #16a34a; font-weight: bold;">UP</span>
+                                    @else
+                                        <span style="color: #dc2626; font-weight: bold;">DOWN</span>
+                                    @endif
+
+                                    @if ($latestCheck && $latestCheck->http_status_code)
+                                        <br>
+                                        <small>HTTP {{ $latestCheck->http_status_code }}</small>
+                                    @endif
+                                </td>
+
+                                <td>
+                                    @if ($latestCheck && $latestCheck->response_time_ms !== null)
+                                        {{ $latestCheck->response_time_ms }} ms
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+
+                                <td>{{ $endpoint->created_at->format('d M Y H:i') }}</td>
+
+                                <td>
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <form
+                                        action="{{ route('endpoints.check', $endpoint) }}"
+                                        method="POST"
+                                    >
+                                        @csrf
+                                        <button class="primary" type="submit">Check Now</button>
+                                    </form>
+
+                                    <a
+                                        href="{{ route('endpoints.show', $endpoint) }}"
+                                        style="display: inline-block; padding: 10px 16px; border-radius: 7px; background: #e0e7ff; color: #3730a3; text-decoration: none; font-weight: bold;"
+                                    >
+                                        Riwayat
+                                    </a>
+
                                     <form
                                         action="{{ route('endpoints.destroy', $endpoint) }}"
                                         method="POST"
@@ -175,11 +223,26 @@
                                         @method('DELETE')
                                         <button class="danger" type="submit">Hapus</button>
                                     </form>
+                                </div>
+
+
+                                    @if ($latestCheck)
+                                        <small class="muted">
+                                            Diperiksa:
+                                            {{ $latestCheck->checked_at->format('d M Y H:i:s') }}
+                                        </small>
+
+                                        @if ($latestCheck->error_message)
+                                            <p style="color: #dc2626; font-size: 12px;">
+                                                {{ $latestCheck->error_message }}
+                                            </p>
+                                        @endif
+                                    @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="empty">
+                                <td colspan="6" class="empty">
                                     Belum ada endpoint. Tambahkan endpoint pertama kamu!
                                 </td>
                             </tr>
